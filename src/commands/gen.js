@@ -16,26 +16,34 @@ export async function genCommand(options) {
     const privateKeyExists = existsSync(keyPaths.privateKey);
     const publicKeyExists = existsSync(keyPaths.publicKey);
     
-    let useExistingKeys = false;
+    let shouldGenerateNewKeys = false;
     
     if (privateKeyExists && publicKeyExists) {
-      const { keyChoice } = await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'keyChoice',
-          message: 'RSA keypair found. What would you like to do?',
-          choices: [
-            { name: 'Use existing keys', value: 'existing' },
-            { name: 'Generate new keypair', value: 'new' }
-          ]
-        }
-      ]);
-      
-      useExistingKeys = keyChoice === 'existing';
+      if (options.json) {
+        // In JSON mode, always use existing keys if they exist
+        shouldGenerateNewKeys = false;
+      } else {
+        const { keyChoice } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'keyChoice',
+            message: 'RSA keypair found. What would you like to do?',
+            choices: [
+              { name: 'Use existing keys', value: 'existing' },
+              { name: 'Generate new keypair', value: 'new' }
+            ]
+          }
+        ]);
+        
+        shouldGenerateNewKeys = keyChoice === 'new';
+      }
+    } else {
+      // Keys don't exist, need to generate them
+      shouldGenerateNewKeys = true;
     }
     
     // Generate new keys if needed
-    if (!useExistingKeys || !privateKeyExists || !publicKeyExists) {
+    if (shouldGenerateNewKeys) {
       console.log(chalk.blue('\nGenerating new RSA keypair...'));
       const { privateKey, publicKey } = await generateRSAKeyPair(config.keyBits);
       saveKeyPair(keyPaths.privateKey, keyPaths.publicKey, privateKey, publicKey);
@@ -54,7 +62,7 @@ export async function genCommand(options) {
     const claims = await getTokenClaims(options);
     
     // Select expiration
-    const expirationSeconds = await selectExpiration();
+    const expirationSeconds = await selectExpiration(options.json);
     const exp = Math.floor(Date.now() / 1000) + expirationSeconds;
     
     // Build JWT payload
@@ -111,6 +119,9 @@ async function getTokenClaims(options) {
   // Get issuer
   if (options.issuer) {
     claims.iss = options.issuer;
+  } else if (options.json) {
+    // In JSON mode, use default if not provided
+    claims.iss = 'jwt-forge';
   } else {
     const { issuer } = await inquirer.prompt([
       {
@@ -126,6 +137,9 @@ async function getTokenClaims(options) {
   // Get subject
   if (options.subject) {
     claims.sub = options.subject;
+  } else if (options.json) {
+    // In JSON mode, use default if not provided
+    claims.sub = 'user';
   } else {
     const { subject } = await inquirer.prompt([
       {
@@ -146,8 +160,8 @@ async function getTokenClaims(options) {
     } catch (error) {
       throw new Error(`Invalid JSON in --claims: ${error.message}`);
     }
-  } else {
-    // Prompt for custom claims
+  } else if (!options.json) {
+    // Only prompt for custom claims in interactive mode
     const { addCustomClaims } = await inquirer.prompt([
       {
         type: 'confirm',

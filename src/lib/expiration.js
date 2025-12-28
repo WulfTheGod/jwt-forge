@@ -19,7 +19,12 @@ const TIME_UNITS = [
   { name: 'days', value: 24 * 60 * 60 }
 ];
 
-export async function selectExpiration() {
+export async function selectExpiration(nonInteractive = false, defaultSeconds = 3600) {
+  if (nonInteractive) {
+    // Return default expiration (1 hour) for non-interactive mode
+    return defaultSeconds;
+  }
+  
   console.log(chalk.cyan('\nSelect token expiration:'));
   
   const { expiration } = await inquirer.prompt([
