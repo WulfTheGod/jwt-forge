@@ -1,0 +1,36 @@
+{
+  "name": "jwt-forge",
+  "version": "1.0.0",
+  "description": "A Node.js CLI for generating and verifying RSA-signed JWTs with interactive expiration picker",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "jwt-forge": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "link": "npm link"
+  },
+  "keywords": ["jwt", "cli", "rsa", "rs256", "token"],
+  "author": "JWT CLI Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WulfTheGod/jwt-forge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WulfTheGod/jwt-forge/issues"
+  },
+  "homepage": "https://github.com/WulfTheGod/jwt-forge#readme",
+  "license": "MIT",
+  "dependencies": {
+    "jose": "^5.2.0",
+    "inquirer": "^9.2.15",
+    "commander": "^11.1.0",
+    "chalk": "^5.3.0",
+    "clipboardy": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
