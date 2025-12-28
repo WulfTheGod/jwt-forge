@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "link": "npm link"
+    "link": "npm link",
+    "test": "node src/index.js --help && node src/index.js keys show"
   },
   "keywords": ["jwt", "cli", "rsa", "rs256", "token"],
   "author": "JWT CLI Contributors",
